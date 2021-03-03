@@ -92,7 +92,8 @@ class XHProfRuns_Default implements iXHProfRuns {
     // in which the error_log file resides.
 
     if (empty($dir)) {
-      $dir = ini_get("xhprof.output_dir");
+      $dir = getenv("XHPROF_OUTPUT");
+
       if (empty($dir)) {
 
         $dir = sys_get_temp_dir();
@@ -108,7 +109,9 @@ class XHProfRuns_Default implements iXHProfRuns {
   }
 
   public function get_run($run_id, $type, &$run_desc) {
+
     $file_name = $this->file_name($run_id, $type);
+
 
     if (!file_exists($file_name)) {
       xhprof_error("Could not find file $file_name");
@@ -117,6 +120,10 @@ class XHProfRuns_Default implements iXHProfRuns {
     }
 
     $contents = file_get_contents($file_name);
+
+      //print_r($contents);
+
+
     $run_desc = "XHProf Run (Namespace=$type)";
     return unserialize($contents);
   }
@@ -149,7 +156,7 @@ class XHProfRuns_Default implements iXHProfRuns {
     if (is_dir($this->dir)) {
         echo "<hr/>Existing runs:\n<ul>\n";
         $files = glob("{$this->dir}/*.{$this->suffix}");
-        usort($files, create_function('$a,$b', 'return filemtime($b) - filemtime($a);'));
+        usort($files, function($a,$b) {return filemtime($b) - filemtime($a);});
         foreach ($files as $file) {
             list($run,$source) = explode('.', basename($file));
             echo '<li><a href="' . htmlentities($_SERVER['SCRIPT_NAME'])
